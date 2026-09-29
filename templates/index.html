@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section (Background added inline to guarantee it works) -->
+<div class="hero-section text-center text-white d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #0f5132 0%, #198754 50%, #052c1a 100%); border-radius: 0 0 20px 20px; margin-top: -1.5rem; min-height: 600px; position: relative; overflow: hidden;">
+    <div class="hero-content position-relative" style="z-index: 2; padding: 0 20px;">
+        <h1 class="display-3 fw-bold mb-3 animate-fade-in" style="text-shadow: 2px 2px 10px rgba(0,0,0,0.6);">AgroDirect<span class="text-warning">+</span></h1>
+        <p class="lead fs-4 mb-4 animate-fade-in-delay" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.5);">Connecting Coffee & Pepper Farmers Directly with Corporate Buyers</p>
+        <p class="mb-5 opacity-75 animate-fade-in-delay">Intelligent Crop Advisory | Loan Assistance | Carbon Credit Trading</p>
+        
+        <div class="d-flex justify-content-center gap-3 animate-fade-in-delay-2">
+            <a href="{{ url_for('register_farmer') }}" class="btn btn-warning btn-lg px-5 fw-bold shadow-lg hover-scale">Join as Farmer</a>
+            <a href="{{ url_for('register_buyer') }}" class="btn btn-outline-light btn-lg px-5 fw-bold shadow-lg hover-scale">Join as Buyer</a>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5 pt-4">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-success">Why AgroDirect+?</h2>
+        <p class="text-muted">A complete ecosystem designed for the modern planter</p>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Card 1 -->
+        <div class="col-md-3">
+            <div class="card feature-card h-100 border-0 shadow-sm text-center p-4">
+                <div class="icon-circle bg-success-subtle text-success mx-auto mb-3">
+                    <i class="bi bi-shop fs-2"></i>
+                </div>
+                <h5 class="fw-bold">Direct Marketplace</h5>
+                <p class="text-muted small">Sell your coffee and pepper directly to exporters and roasters. Eliminate middlemen and maximize profits.</p>
+            </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="col-md-3">
+            <div class="card feature-card h-100 border-0 shadow-sm text-center p-4">
+                <div class="icon-circle bg-primary-subtle text-primary mx-auto mb-3">
+                    <i class="bi bi-cloud-sun fs-2"></i>
+                </div>
+                <h5 class="fw-bold">Smart Advisory</h5>
+                <p class="text-muted small">Get fertilizer and irrigation advice based on real-time weather and your soil test reports.</p>
+            </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="col-md-3">
+            <div class="card feature-card h-100 border-0 shadow-sm text-center p-4">
+                <div class="icon-circle bg-warning-subtle text-warning mx-auto mb-3">
+                    <i class="bi bi-bank fs-2"></i>
+                </div>
+                <h5 class="fw-bold">Loan & Schemes</h5>
+                <p class="text-muted small">Check eligibility for crop loans and government schemes instantly. Download pre-filled PDF forms.</p>
+            </div>
+        </div>
+        <!-- Card 4 -->
+        <div class="col-md-3">
+            <div class="card feature-card h-100 border-0 shadow-sm text-center p-4">
+                <div class="icon-circle bg-info-subtle text-info mx-auto mb-3">
+                    <i class="bi bi-globe fs-2"></i>
+                </div>
+                <h5 class="fw-bold">Carbon Credits</h5>
+                <p class="text-muted small">Earn extra income by generating and selling carbon credits from your plantation's sequestration.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Impact Statistics Section -->
+<div class="stats-section text-white py-5 mt-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h2 class="display-4 fw-bold text-warning">500+</h2>
+                <p class="lead">Farmers Empowered</p>
+            </div>
+            <div class="col-md-4">
+                <h2 class="display-4 fw-bold text-warning">10k+</h2>
+                <p class="lead">Tonnes of CO₂ Sequestered</p>
+            </div>
+            <div class="col-md-4">
+                <h2 class="display-4 fw-bold text-warning">₹50L+</h2>
+                <p class="lead">Direct Farmer Revenue</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

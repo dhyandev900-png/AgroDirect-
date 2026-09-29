@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Add Listing{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">Add New Produce Listing</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Crop Type</label>
+                        <select name="crop_type" class="form-select" required>
+                            <option value="Coffee">Coffee</option>
+                            <option value="Pepper">Pepper</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grade</label>
+                        <input type="text" name="grade" class="form-control" placeholder="e.g., Arabica Parchment A" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity (kg)</label>
+                        <input type="number" step="0.1" name="quantity_kg" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Expected Price (₹/kg)</label>
+                        <input type="number" step="0.1" name="expected_price_per_kg" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Harvest Date</label>
+                        <input type="date" name="harvest_date" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Publish Listing</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

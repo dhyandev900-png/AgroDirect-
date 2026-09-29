@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Buyer Dashboard{% endblock %}
+{% block content %}
+<h2 class="text-success">Welcome, {{ current_user.company_name }}</h2>
+<p class="text-muted">Buyer Type: {{ current_user.buyer_type }} | GST: {{ current_user.gst_number }}</p>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Available Produce in Marketplace</div>
+            <div class="card-body">
+                {% if listings %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>Crop</th><th>Grade</th><th>Qty (kg)</th><th>Price/kg</th><th>Farmer Location</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for l in listings %}
+                        <tr>
+                            <td>{{ l.crop_type }}</td>
+                            <td>{{ l.grade }}</td>
+                            <td>{{ l.quantity_kg }}</td>
+                            <td>₹{{ l.expected_price_per_kg }}</td>
+                            <td>{{ l.farmer.district }}, {{ l.farmer.state }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('place_order', listing_id=l.id) }}" class="d-flex">
+                                    <input type="number" name="quantity_kg" class="form-control form-control-sm me-1" placeholder="Qty" required style="width: 80px;">
+                                    <input type="number" step="0.1" name="offered_price_per_kg" class="form-control form-control-sm me-1" placeholder="Price" required style="width: 80px;">
+                                    <button class="btn btn-sm btn-success">Buy</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No listings available right now.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">My Orders</div>
+            <div class="card-body">
+                {% if orders %}
+                <ul class="list-group">
+                    {% for o in orders %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ o.quantity_kg }}kg of {{ o.listing.crop_type }} at ₹{{ o.offered_price_per_kg }}/kg
+                        <span class="badge bg-warning text-dark">{{ o.status }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">You haven't placed any orders yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

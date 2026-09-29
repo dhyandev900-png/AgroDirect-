@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h2 class="text-success">Admin Dashboard</h2>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">Registered Farmers ({{ farmers|length }})</div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for f in farmers %}
+                    <li class="list-group-item">{{ f.name }} ({{ f.district }}) - {{ f.crop_type }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Registered Buyers ({{ buyers|length }})</div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for b in buyers %}
+                    <li class="list-group-item">{{ b.company_name }} - {{ b.buyer_type }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

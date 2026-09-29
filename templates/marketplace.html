@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Marketplace{% endblock %}
+{% block content %}
+<h2 class="text-success">Marketplace</h2>
+<p class="text-muted">Browse all active produce listings from farmers.</p>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <table class="table table-bordered table-hover">
+            <thead class="table-success">
+                <tr>
+                    <th>Crop</th><th>Grade</th><th>Quantity (kg)</th><th>Price (₹/kg)</th>
+                    <th>Farmer</th><th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in listings %}
+                <tr>
+                    <td>{{ l.crop_type }}</td>
+                    <td>{{ l.grade }}</td>
+                    <td>{{ l.quantity_kg }}</td>
+                    <td>₹{{ l.expected_price_per_kg }}</td>
+                    <td>{{ l.farmer.name }}</td>
+                    <td>{{ l.farmer.district }}, {{ l.farmer.state }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted">No active listings found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

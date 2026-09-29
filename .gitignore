@@ -1,0 +1,18 @@
+# Virtual Environment
+venv/
+env/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Database files
+*.db
+instance/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store

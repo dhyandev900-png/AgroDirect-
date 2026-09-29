@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Crop Advisory{% endblock %}
+{% block content %}
+<h2 class="text-success">🌾 Crop Advisory Dashboard</h2>
+<p class="text-muted">Get personalized fertilizer, irrigation, and pest recommendations.</p>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">Soil Report</div>
+            <div class="card-body">
+                {% if soil %}
+                    <p><strong>pH:</strong> {{ soil.soil_ph }}</p>
+                    <p><strong>Nitrogen:</strong> {{ soil.nitrogen_kg_ha }} kg/ha</p>
+                    <p><strong>Phosphorus:</strong> {{ soil.phosphorus_kg_ha }} kg/ha</p>
+                    <p><strong>Potassium:</strong> {{ soil.potassium_kg_ha }} kg/ha</p>
+                    <a href="{{ url_for('soil_input') }}" class="btn btn-sm btn-outline-success">Update Soil Report</a>
+                {% else %}
+                    <p class="text-muted">No soil report found.</p>
+                    <a href="{{ url_for('soil_input') }}" class="btn btn-success">Add Soil Report</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Crop Stage</div>
+            <div class="card-body">
+                {% if stage %}
+                    <p><strong>Current Stage:</strong> {{ stage.current_stage|capitalize }}</p>
+                    <p><strong>Crop:</strong> {{ stage.crop_type }}</p>
+                {% else %}
+                    <p class="text-muted">Crop stage not set.</p>
+                {% endif %}
+                <form method="POST" action="{{ url_for('set_crop_stage') }}" class="mt-2">
+                    <div class="row g-2">
+                        <div class="col-md-7">
+                            <select name="current_stage" class="form-select form-select-sm" required>
+                                <option value="vegetative">Vegetative</option>
+                                <option value="flowering">Flowering</option>
+                                <option value="fruiting">Fruiting</option>
+                                <option value="harvesting">Harvesting</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <button type="submit" class="btn btn-sm btn-primary w-100">Update Stage</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a href="{{ url_for('generate_advisory') }}" class="btn btn-success btn-lg">
+        <i class="bi bi-magic"></i> Generate Full Advisory
+    </a>
+</div>
+{% endblock %}

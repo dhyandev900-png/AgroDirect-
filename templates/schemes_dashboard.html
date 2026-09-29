@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Schemes & Loans{% endblock %}
+{% block content %}
+<h2 class="text-success">🏛️ Government Schemes & Crop Loans</h2>
+
+<h4 class="mt-4">Government Schemes</h4>
+<div class="row">
+    {% for item in schemes %}
+    <div class="col-md-6 mb-3">
+        <div class="card h-100 border-{{ 'success' if item.eligible else 'secondary' }}">
+            <div class="card-header d-flex justify-content-between">
+                <strong>{{ item.scheme.scheme_name }}</strong>
+                <span class="badge bg-{{ 'success' if item.eligible else 'secondary' }}">{{ '✓ Eligible' if item.eligible else 'Not Eligible' }}</span>
+            </div>
+            <div class="card-body">
+                <p class="small mb-1"><strong>Benefit:</strong> {{ item.scheme.benefit_amount }}</p>
+                <p class="small">{{ item.scheme.description }}</p>
+                {% if not item.eligible %}
+                    <p class="text-danger small mb-0">Missing: {{ item.missing|join(', ') }}</p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                {% if item.eligible %}
+                <form method="POST" action="{{ url_for('apply_scheme', scheme_id=item.scheme.id) }}">
+                    <button class="btn btn-sm btn-success">Apply & Download Form</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<h4 class="mt-5">Crop Loan Products</h4>
+<div class="row">
+    {% for item in loans %}
+    <div class="col-md-6 mb-3">
+        <div class="card h-100 border-{{ 'success' if item.eligible else 'secondary' }}">
+            <div class="card-header d-flex justify-content-between">
+                <strong>{{ item.loan.bank_name }}</strong>
+                <span class="badge bg-{{ 'success' if item.eligible else 'secondary' }}">{{ 'Eligible' if item.eligible else 'Not Eligible' }}</span>
+            </div>
+            <div class="card-body">
+                <p class="small mb-1"><strong>Interest:</strong> {{ item.loan.interest_rate_pct }}% p.a.</p>
+                <p class="small mb-1"><strong>Max Amount:</strong> ₹{{ '{:,.0f}'.format(item.loan.max_amount_inr) }}</p>
+                {% if item.eligible %}
+                <div class="alert alert-light border small mb-0">
+                    Eligible for up to ₹{{ '{:,.0f}'.format(item.max_amount) }}<br>
+                    EMI: ₹{{ item.emi_data.emi }} × {{ item.emi_data.months }} months
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                {% if item.eligible %}
+                <form method="POST" action="{{ url_for('apply_loan', loan_id=item.loan.id) }}">
+                    <button class="btn btn-sm btn-success">Apply & Download Form</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<h4 class="mt-5">My Applications</h4>
+{% if applications %}
+<table class="table table-bordered">
+    <thead class="table-light"><tr><th>Type</th><th>Item</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for a in applications %}
+        <tr>
+            <td>{{ a.application_type|capitalize }}</td>
+            <td>{{ a.scheme.scheme_name if a.scheme else a.loan.loan_type }}</td>
+            <td><span class="badge bg-info">{{ a.status }}</span></td>
+            <td><a href="{{ url_for('download_application_pdf', app_id=a.id) }}" class="btn btn-sm btn-outline-primary">Download PDF</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">No applications yet.</p>
+{% endif %}
+
+<a href="{{ url_for('loan_calculator') }}" class="btn btn-outline-success mt-3">📊 Open Loan EMI Calculator</a>
+{% endblock %}

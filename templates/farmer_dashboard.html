@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Farmer Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="text-success">Welcome, {{ current_user.name }}</h2>
+        <p class="text-muted mb-0">{{ current_user.district }}, {{ current_user.state }} | {{ current_user.crop_type }}</p>
+    </div>
+    <a href="{{ url_for('add_listing') }}" class="btn btn-warning">➕ Add New Listing</a>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+                <h6>Land Size</h6>
+                <h3>{{ current_user.land_size_acres }} acres</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow-sm">
+            <div class="card-body">
+                <h6>Active Listings</h6>
+                <h3>{{ listings|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white shadow-sm">
+            <div class="card-body">
+                <h6>Pending Orders</h6>
+                <h3>{{ orders|selectattr('status', 'equalto', 'Pending')|list|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow-sm">
+            <div class="card-body">
+                <h6>Carbon Credits</h6>
+                <h3>{{ carbon.credits_earned if carbon else 0 }} tCO₂</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">My Produce Listings</div>
+            <div class="card-body">
+                {% if listings %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>Crop</th><th>Grade</th><th>Qty (kg)</th><th>Price/kg</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for l in listings %}
+                        <tr>
+                            <td>{{ l.crop_type }}</td>
+                            <td>{{ l.grade }}</td>
+                            <td>{{ l.quantity_kg }}</td>
+                            <td>₹{{ l.expected_price_per_kg }}</td>
+                            <td><span class="badge bg-{{ 'success' if l.status == 'Active' else 'secondary' }}">{{ l.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No listings yet. <a href="{{ url_for('add_listing') }}">Add your first listing</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">Carbon Credit Estimate</div>
+            <div class="card-body">
+                {% if carbon %}
+                <p class="mb-1"><strong>Estimated Sequestration:</strong></p>
+                <h4 class="text-info">{{ carbon.estimated_tonnes }} tonnes CO₂/year</h4>
+                <hr>
+                <p class="mb-1"><strong>Credits Earned:</strong> {{ carbon.credits_earned }}</p>
+                <p class="mb-1"><strong>Status:</strong> <span class="badge bg-warning text-dark">{{ carbon.verification_status }}</span></p>
+                <p class="text-muted small mt-2">Estimated value: ₹{{ (carbon.credits_earned * 650)|round(0) }}</p>
+                {% else %}
+                <p class="text-muted">Complete your profile to estimate carbon credits.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

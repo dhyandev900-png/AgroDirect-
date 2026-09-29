@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Advisory Result{% endblock %}
+{% block content %}
+<h2 class="text-success">🌱 Your Personalized Advisory</h2>
+<p class="text-muted">Crop: {{ crop_type }} | Stage: {{ stage|capitalize }}</p>
+
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">Live Weather – {{ weather.current.city }}</div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3"><h5>{{ weather.current.temp }}°C</h5><p class="text-muted small">Temperature</p></div>
+            <div class="col-md-3"><h5>{{ weather.current.humidity }}%</h5><p class="text-muted small">Humidity</p></div>
+            <div class="col-md-3"><h5>{{ weather.current.rainfall_mm }} mm</h5><p class="text-muted small">Rainfall</p></div>
+            <div class="col-md-3"><h5>{{ weather.current.description|capitalize }}</h5><p class="text-muted small">Condition</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <i class="bi bi-droplet"></i> Irrigation Advisory
+        <span class="badge bg-{{ 'danger' if irrigation.priority == 'HIGH' else 'warning' if irrigation.priority == 'MEDIUM' else 'success' }} ms-2">{{ irrigation.priority }} Priority</span>
+    </div>
+    <div class="card-body">
+        <p><strong>{{ irrigation.advice }}</strong></p>
+        <p class="text-muted">{{ irrigation.stage_note }}</p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-success text-white"><i class="bi bi-flower1"></i> Fertilizer Recommendations</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-light"><tr><th>Nutrient</th><th>Your Soil Value</th><th>Action</th><th>Timing</th></tr></thead>
+            <tbody>
+                {% for r in fertilizer %}
+                <tr>
+                    <td><strong>{{ r.nutrient }}</strong></td>
+                    <td>{{ r.soil_value }}</td>
+                    <td>{{ r.action }}</td>
+                    <td>{{ r.timing }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-danger text-white"><i class="bi bi-bug"></i> Pest & Disease Alerts</div>
+    <div class="card-body">
+        {% for p in pests %}
+        <div class="alert alert-{{ 'danger' if p.risk == 'CRITICAL' else 'warning' if p.risk == 'HIGH' else 'info' if p.risk == 'MEDIUM' else 'success' }}">
+            <h6 class="mb-1"><strong>{{ p.disease }}</strong> <span class="badge bg-dark">{{ p.risk }}</span></h6>
+            <p class="mb-1 small"><em>{{ p.reason }}</em></p>
+            <p class="mb-0"><strong>Action:</strong> {{ p.action }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-warning text-dark"><i class="bi bi-calendar-check"></i> Harvest Window</div>
+    <div class="card-body">
+        <p><strong>{{ harvest.message }}</strong></p>
+    </div>
+</div>
+{% endblock %}

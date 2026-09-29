@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Carbon Marketplace{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="text-success">🌍 Carbon Credit Marketplace</h2>
+        <p class="text-muted">Trade carbon sequestration credits from coffee and pepper plantations.</p>
+    </div>
+    {% if current_user.role == 'farmer' and my_credits and my_credits.verification_status != 'Pooled' %}
+    <form method="POST" action="{{ url_for('create_carbon_pool') }}">
+        <button class="btn btn-success">➕ Pool My Credits ({{ my_credits.credits_earned }} tCO₂)</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if current_user.role == 'farmer' %}
+<div class="alert alert-info mt-3">
+    <h5>Your Carbon Credits: {{ my_credits.credits_earned if my_credits else 0 }} tCO₂</h5>
+    <p class="mb-0">Status: <span class="badge bg-{{ 'warning' if my_credits and my_credits.verification_status == 'Pending' else 'success' }}">{{ my_credits.verification_status if my_credits else 'N/A' }}</span></p>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">Available Carbon Pools</div>
+            <div class="card-body">
+                {% if pools %}
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Pool Name</th>
+                            <th>Region</th>
+                            <th>Available Tonnes</th>
+                            <th>Price / Tonne</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pool in pools %}
+                        <tr>
+                            <td><strong>{{ pool.name }}</strong></td>
+                            <td>{{ pool.region }}</td>
+                            <td>{{ pool.total_tonnes }} tCO₂</td>
+                            <td>₹{{ pool.price_per_tonne }}</td>
+                            <td>
+                                {% if current_user.role == 'buyer' %}
+                                <form method="POST" action="{{ url_for('buy_carbon_credits', pool_id=pool.id) }}" class="d-flex">
+                                    <input type="number" name="tonnes" step="0.1" max="{{ pool.total_tonnes }}" class="form-control form-control-sm me-2" placeholder="Tonnes" required style="width: 100px;">
+                                    <button class="btn btn-sm btn-success">Buy</button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted small">Only buyers can purchase</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No open carbon pools available right now. Farmers can pool their credits to create one!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.role == 'buyer' and purchases %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">My Carbon Purchases</div>
+            <div class="card-body">
+                <table class="table">
+                    <thead><tr><th>Date</th><th>Pool</th><th>Tonnes</th><th>Amount</th><th>Certificate</th></tr></thead>
+                    <tbody>
+                        {% for p in purchases %}
+                        <tr>
+                            <td>{{ p.purchased_at.strftime('%d-%m-%Y') }}</td>
+                            <td>{{ p.pool.name }}</td>
+                            <td>{{ p.tonnes_purchased }} tCO₂</td>
+                            <td>₹{{ '{:,.2f}'.format(p.total_amount) }}</td>
+                            <td><a href="{{ url_for('download_carbon_certificate', purchase_id=p.id) }}" class="btn btn-sm btn-outline-success">Download PDF</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

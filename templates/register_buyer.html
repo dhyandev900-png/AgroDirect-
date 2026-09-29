@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Buyer Registration{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h3 class="text-success mb-4">Corporate Buyer Registration</h3>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Contact Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" name="company_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">GST Number</label>
+                        <input type="text" name="gst_number" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Buyer Type</label>
+                        <select name="buyer_type" class="form-select" required>
+                            <option value="Exporter">Exporter</option>
+                            <option value="Roaster">Coffee Roaster</option>
+                            <option value="Spice Brand">Spice Brand</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" name="phone" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Register as Buyer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
