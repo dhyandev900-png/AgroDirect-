@@ -677,9 +677,9 @@ def download_carbon_certificate(purchase_id):
     return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 
-# ==================== RUN APP ====================
+# Create database tables when the app starts (Works on Gunicorn/Render)
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, port=5001)
+    app.run(debug=True)
