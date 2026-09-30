@@ -2,109 +2,133 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-section text-center text-white d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #0f5132 0%, #198754 50%, #052c1a 100%); border-radius: 0 0 20px 20px; margin-top: -1.5rem; min-height: 600px; position: relative; overflow: hidden;">
-    <div class="hero-content position-relative" style="z-index: 2; padding: 0 20px;">
-        <h1 class="display-3 fw-bold mb-3 animate-fade-in" style="text-shadow: 2px 2px 10px rgba(0,0,0,0.6);">AgroDirect<span class="text-warning">+</span></h1>
-        <p class="lead fs-4 mb-4 animate-fade-in-delay" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.5);">Connecting Coffee & Pepper Farmers Directly with Corporate Buyers</p>
-        <p class="mb-5 opacity-75 animate-fade-in-delay">Intelligent Crop Advisory | Loan Assistance | Carbon Credit Trading</p>
+<!-- Premium Hero Section -->
+<div class="hero-section text-center d-flex align-items-center justify-content-center">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative hero-content">
+        <span class="badge badge-premium mb-3 animate-fade-in">🌿 The Future of Agri-Tech</span>
+        <h1 class="display-3 fw-bold text-white mb-4 animate-fade-in-delay">Empowering Farmers, <br><span class="text-gradient">Enriching Ecosystems.</span></h1>
+        <p class="lead text-white-50 mb-5 animate-fade-in-delay" style="max-width: 700px; margin: 0 auto;">Connect directly with corporate buyers, get AI-powered crop advice, access government schemes, and trade carbon credits—all in one platform.</p>
         
         <div class="d-flex justify-content-center gap-3 animate-fade-in-delay-2">
-            <a href="{{ url_for('register_farmer') }}" class="btn btn-warning btn-lg px-5 fw-bold shadow-lg hover-scale">Join as Farmer</a>
-            <a href="{{ url_for('register_buyer') }}" class="btn btn-outline-light btn-lg px-5 fw-bold shadow-lg hover-scale">Join as Buyer</a>
+            <a href="{{ url_for('register_farmer') }}" class="btn btn-premium-primary btn-lg">Join as Farmer <i class="bi bi-arrow-right ms-2"></i></a>
+            <a href="{{ url_for('register_buyer') }}" class="btn btn-premium-outline btn-lg">Join as Buyer</a>
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5 pt-4">
+<!-- "How It Works" Interaction Section -->
+<div class="container my-5 py-5">
     <div class="text-center mb-5">
-        <h2 class="fw-bold text-success">Why Choose AgroDirect+?</h2>
-        <p class="text-muted fs-5">A complete ecosystem designed for the modern planter</p>
+        <h2 class="fw-bold text-success mb-2">How It Works</h2>
+        <p class="text-muted fs-5">Three simple steps to transform your plantation</p>
     </div>
-    
-    <div class="row g-4">
-        <!-- Card 1: Direct Marketplace -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{{ url_for('marketplace') }}" class="text-decoration-none">
-                <div class="card premium-card h-100 border-0 text-center p-4">
-                    <div class="icon-circle bg-success text-white mx-auto mb-3">
-                        <i class="bi bi-shop fs-2"></i>
-                    </div>
-                    <h5 class="fw-bold text-dark">Direct Marketplace</h5>
-                    <p class="text-muted small flex-grow-1">Sell your coffee and pepper directly to exporters and roasters. Eliminate middlemen, get fair prices, and track orders in real-time.</p>
-                    <div class="mt-auto">
-                        <span class="btn btn-sm btn-outline-success w-100">Explore Marketplace →</span>
-                    </div>
-                </div>
-            </a>
+    <div class="row text-center position-relative">
+        <!-- Connecting Line -->
+        <div class="col-md-4 mb-4">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h5 class="fw-bold mt-3">Create Profile</h5>
+                <p class="text-muted small">Register as a farmer or buyer. Input your land details and crop information.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h5 class="fw-bold mt-3">Get Insights & Trade</h5>
+                <p class="text-muted small">Receive AI-driven weather and soil advisories. List your produce directly to buyers.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h5 class="fw-bold mt-3">Earn & Sustain</h5>
+                <p class="text-muted small">Sell your harvest at fair prices and generate passive income by trading carbon credits.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Feature Cards -->
+<div class="container-fluid bg-light py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-success">Everything You Need to Succeed</h2>
+            <p class="text-muted fs-5">A complete ecosystem designed for the modern planter</p>
         </div>
         
-        <!-- Card 2: Smart Advisory -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{{ url_for('advisory_dashboard') }}" class="text-decoration-none">
-                <div class="card premium-card h-100 border-0 text-center p-4">
-                    <div class="icon-circle bg-primary text-white mx-auto mb-3">
-                        <i class="bi bi-cloud-sun fs-2"></i>
+        <div class="row g-4">
+            <!-- Card 1 -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('marketplace') }}" class="text-decoration-none">
+                    <div class="premium-card h-100">
+                        <div class="icon-wrapper bg-glow-green">
+                            <i class="bi bi-shop text-success fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mt-4 mb-2 text-dark">Direct Marketplace</h5>
+                        <p class="text-muted small mb-4">Sell your coffee and pepper directly to exporters and roasters. Eliminate middlemen and maximize profits.</p>
+                        <span class="card-link text-success">Explore Marketplace <i class="bi bi-arrow-right"></i></span>
                     </div>
-                    <h5 class="fw-bold text-dark">Smart Advisory</h5>
-                    <p class="text-muted small flex-grow-1">Get fertilizer and irrigation advice based on real-time weather and your soil test reports. Prevent pests before they strike.</p>
-                    <div class="mt-auto">
-                        <span class="btn btn-sm btn-outline-primary w-100">Get Advisory →</span>
+                </a>
+            </div>
+            <!-- Card 2 -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('advisory_dashboard') }}" class="text-decoration-none">
+                    <div class="premium-card h-100">
+                        <div class="icon-wrapper bg-glow-blue">
+                            <i class="bi bi-cloud-sun text-primary fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mt-4 mb-2 text-dark">Smart Advisory</h5>
+                        <p class="text-muted small mb-4">Get fertilizer and irrigation advice based on real-time weather and your soil test reports.</p>
+                        <span class="card-link text-primary">Get Advisory <i class="bi bi-arrow-right"></i></span>
                     </div>
-                </div>
-            </a>
-        </div>
-        
-        <!-- Card 3: Loan & Schemes -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{{ url_for('schemes_dashboard') }}" class="text-decoration-none">
-                <div class="card premium-card h-100 border-0 text-center p-4">
-                    <div class="icon-circle bg-warning text-white mx-auto mb-3">
-                        <i class="bi bi-bank fs-2"></i>
+                </a>
+            </div>
+            <!-- Card 3 -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('schemes_dashboard') }}" class="text-decoration-none">
+                    <div class="premium-card h-100">
+                        <div class="icon-wrapper bg-glow-yellow">
+                            <i class="bi bi-bank text-warning fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mt-4 mb-2 text-dark">Loan & Schemes</h5>
+                        <p class="text-muted small mb-4">Check eligibility for crop loans and government schemes. Download pre-filled PDF forms.</p>
+                        <span class="card-link text-warning">Check Eligibility <i class="bi bi-arrow-right"></i></span>
                     </div>
-                    <h5 class="fw-bold text-dark">Loan & Schemes</h5>
-                    <p class="text-muted small flex-grow-1">Check eligibility for crop loans and government schemes instantly. Download pre-filled PDF application forms.</p>
-                    <div class="mt-auto">
-                        <span class="btn btn-sm btn-outline-warning w-100">Check Eligibility →</span>
+                </a>
+            </div>
+            <!-- Card 4 -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('carbon_marketplace') }}" class="text-decoration-none">
+                    <div class="premium-card h-100">
+                        <div class="icon-wrapper bg-glow-cyan">
+                            <i class="bi bi-globe text-info fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mt-4 mb-2 text-dark">Carbon Credits</h5>
+                        <p class="text-muted small mb-4">Earn extra income by generating and selling carbon credits from your plantation's sequestration.</p>
+                        <span class="card-link text-info">Trade Carbon <i class="bi bi-arrow-right"></i></span>
                     </div>
-                </div>
-            </a>
-        </div>
-        
-        <!-- Card 4: Carbon Credits -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{{ url_for('carbon_marketplace') }}" class="text-decoration-none">
-                <div class="card premium-card h-100 border-0 text-center p-4">
-                    <div class="icon-circle bg-info text-white mx-auto mb-3">
-                        <i class="bi bi-globe fs-2"></i>
-                    </div>
-                    <h5 class="fw-bold text-dark">Carbon Credits</h5>
-                    <p class="text-muted small flex-grow-1">Earn extra income by generating and selling carbon credits from your plantation's sequestration. Verified & tamper-proof.</p>
-                    <div class="mt-auto">
-                        <span class="btn btn-sm btn-outline-info w-100">Trade Carbon →</span>
-                    </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Impact Statistics Section -->
-<div class="stats-section text-white py-5 mt-5">
+<div class="stats-section text-white py-5">
     <div class="container">
         <div class="row text-center">
             <div class="col-md-4">
-                <h2 class="display-4 fw-bold text-warning">500+</h2>
-                <p class="lead">Farmers Empowered</p>
+                <h2 class="display-4 fw-bold text-warning animate-fade-in">500+</h2>
+                <p class="lead text-white-50">Farmers Empowered</p>
             </div>
             <div class="col-md-4">
-                <h2 class="display-4 fw-bold text-warning">10k+</h2>
-                <p class="lead">Tonnes of CO₂ Sequestered</p>
+                <h2 class="display-4 fw-bold text-warning animate-fade-in-delay">10k+</h2>
+                <p class="lead text-white-50">Tonnes of CO₂ Sequestered</p>
             </div>
             <div class="col-md-4">
-                <h2 class="display-4 fw-bold text-warning">₹50L+</h2>
-                <p class="lead">Direct Farmer Revenue</p>
+                <h2 class="display-4 fw-bold text-warning animate-fade-in-delay-2">₹50L+</h2>
+                <p class="lead text-white-50">Direct Farmer Revenue</p>
             </div>
         </div>
     </div>
