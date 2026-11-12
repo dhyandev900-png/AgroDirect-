@@ -2,13 +2,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 
-# Initialize the database object here so it can be imported by app.py
 db = SQLAlchemy()
-
-# ==================== USER MANAGEMENT ====================
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
@@ -17,6 +16,7 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(15))
     state = db.Column(db.String(50))
     district = db.Column(db.String(50))
+    location = db.Column(db.String(100)) # NEW: Specific city/town for weather
     language = db.Column(db.String(20), default='English')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -34,19 +34,24 @@ class User(UserMixin, db.Model):
     is_verified = db.Column(db.Boolean, default=False)
 
 
-# ==================== MARKETPLACE ====================
-
 class Listing(db.Model):
     __tablename__ = 'listings'
     id = db.Column(db.Integer, primary_key=True)
     farmer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     crop_type = db.Column(db.String(50), nullable=False)
+    
+    # NEW FIELDS FOR COFFEE
+    coffee_type = db.Column(db.String(50))    # e.g., Arabica Parchment, Robusta Cherry
+    outturn_pct = db.Column(db.Float)         # Outturn percentage
+    moisture_pct = db.Column(db.Float)        # Moisture percentage
+    testing_requested = db.Column(db.Boolean, default=False) # True if farmer wants buyer to test
+
     grade = db.Column(db.String(50))
     quantity_kg = db.Column(db.Float, nullable=False)
     expected_price_per_kg = db.Column(db.Float, nullable=False)
     harvest_date = db.Column(db.Date)
     description = db.Column(db.Text)
-    status = db.Column(db.String(20), default='Active')  # Active, Sold, Expired
+    status = db.Column(db.String(20), default='Active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     farmer = db.relationship('User', backref='listings')
@@ -60,14 +65,12 @@ class Order(db.Model):
     quantity_kg = db.Column(db.Float, nullable=False)
     offered_price_per_kg = db.Column(db.Float, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='Pending')  # Pending, Accepted, Rejected, Completed
+    status = db.Column(db.String(20), default='Pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     listing = db.relationship('Listing', backref='orders')
     buyer = db.relationship('User', backref='orders')
 
-
-# ==================== CARBON CREDITS ====================
 
 class CarbonCredit(db.Model):
     __tablename__ = 'carbon_credits'
@@ -82,8 +85,6 @@ class CarbonCredit(db.Model):
     farmer = db.relationship('User', backref='carbon_credits')
 
 
-# ==================== CROP ADVISORY ====================
-
 class SoilReport(db.Model):
     __tablename__ = 'soil_reports'
     id = db.Column(db.Integer, primary_key=True)
@@ -95,6 +96,8 @@ class SoilReport(db.Model):
     potassium_kg_ha = db.Column(db.Float)
     zinc_ppm = db.Column(db.Float)
     boron_ppm = db.Column(db.Float)
+    soil_moisture = db.Column(db.String(20)) # NEW
+    soil_texture = db.Column(db.String(20))  # NEW
     test_date = db.Column(db.Date)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -105,10 +108,8 @@ class AdvisoryLog(db.Model):
     __tablename__ = 'advisory_logs'
     id = db.Column(db.Integer, primary_key=True)
     farmer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    advisory_type = db.Column(db.String(50))  # fertilizer, irrigation, pest
+    advisory_type = db.Column(db.String(50))
     recommendation = db.Column(db.Text)
-    weather_summary = db.Column(db.Text)
-    soil_summary = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     farmer = db.relationship('User', backref='advisory_logs')
@@ -119,25 +120,23 @@ class CropStage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     farmer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     crop_type = db.Column(db.String(50))
-    current_stage = db.Column(db.String(50))  # flowering, fruiting, harvesting, vegetative
+    current_stage = db.Column(db.String(50))
     stage_start_date = db.Column(db.Date)
-    notes = db.Column(db.Text)
+    has_irrigated = db.Column(db.Boolean, default=False) # NEW FIELD
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     farmer = db.relationship('User', backref='crop_stages')
 
-
-# ==================== LOAN & SCHEME MODELS ====================
 
 class GovernmentScheme(db.Model):
     __tablename__ = 'government_schemes'
     id = db.Column(db.Integer, primary_key=True)
     scheme_id = db.Column(db.String(20), unique=True)
     scheme_name = db.Column(db.String(200), nullable=False)
-    category = db.Column(db.String(50))  # Subsidy, Grant, Income Support, Loan
+    category = db.Column(db.String(50))
     crop = db.Column(db.String(50))
     description = db.Column(db.Text)
-    eligibility_criteria = db.Column(db.Text)   # JSON string
+    eligibility_criteria = db.Column(db.Text)  
     documents_required = db.Column(db.Text)
     benefit_amount = db.Column(db.String(100))
     deadline = db.Column(db.Date)
@@ -154,7 +153,7 @@ class LoanProduct(db.Model):
     max_amount_inr = db.Column(db.Float)
     tenure_years = db.Column(db.Integer)
     documents_required = db.Column(db.Text)
-    eligibility_criteria = db.Column(db.Text)  # JSON string
+    eligibility_criteria = db.Column(db.Text)
 
 
 class SchemeApplication(db.Model):
@@ -163,25 +162,23 @@ class SchemeApplication(db.Model):
     farmer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     scheme_id = db.Column(db.Integer, db.ForeignKey('government_schemes.id'))
     loan_id = db.Column(db.Integer, db.ForeignKey('loan_products.id'))
-    application_type = db.Column(db.String(20))  # 'scheme' or 'loan'
+    application_type = db.Column(db.String(20))
     status = db.Column(db.String(20), default='Submitted')
     applied_at = db.Column(db.DateTime, default=datetime.utcnow)
-    notes = db.Column(db.Text)
 
     farmer = db.relationship('User', backref='applications')
     scheme = db.relationship('GovernmentScheme')
     loan = db.relationship('LoanProduct')
-    
-# ==================== CARBON CREDIT MARKETPLACE ====================
+
 
 class CarbonPool(db.Model):
     __tablename__ = 'carbon_pools'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
-    region = db.Column(db.String(100))  # e.g., Chikmagalur
+    region = db.Column(db.String(100))
     total_tonnes = db.Column(db.Float, default=0.0)
-    price_per_tonne = db.Column(db.Float, default=650.0)  # ₹650/tonne
-    status = db.Column(db.String(20), default='Open')  # Open, Sold Out
+    price_per_tonne = db.Column(db.Float, default=650.0)
+    status = db.Column(db.String(20), default='Open')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -192,8 +189,18 @@ class CarbonPurchase(db.Model):
     pool_id = db.Column(db.Integer, db.ForeignKey('carbon_pools.id'), nullable=False)
     tonnes_purchased = db.Column(db.Float, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
-    certificate_hash = db.Column(db.String(64))  # SHA-256 hash for tamper-proofing
+    certificate_hash = db.Column(db.String(64))
     purchased_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     buyer = db.relationship('User', backref='carbon_purchases')
-    pool = db.relationship('CarbonPool', backref='purchases')    
+    pool = db.relationship('CarbonPool', backref='purchases')
+class PestReport(db.Model):
+    __tablename__ = 'pest_reports'
+    id = db.Column(db.Integer, primary_key=True)
+    farmer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    disease_name = db.Column(db.String(100), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    reported_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    farmer = db.relationship('User', backref='pest_reports')

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}AI Disease Detector{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center mb-4">
+        <h2 class="text-success fw-bold">📸 AI Disease Detector</h2>
+        <p class="text-muted">Upload a close-up photo of a coffee or pepper leaf.</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4 text-center">
+                <form method="POST" enctype="multipart/form-data" onsubmit="showLoading()">
+                    <div class="mb-4">
+                        <i class="bi bi-cloud-arrow-up text-success display-1" id="uploadIcon"></i>
+                        <div id="loadingSpinner" class="d-none">
+                            <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;"></div>
+                            <p class="mt-2 text-success fw-bold">AI is analyzing...</p>
+                        </div>
+                        <input class="form-control mt-3" type="file" name="leaf_image" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold" id="submitBtn">
+                        <i class="bi bi-cpu"></i> Analyze with AI
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if prediction %}
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0 h-100">
+            
+            <div class="card-header fw-bold text-white 
+                {% if prediction.status == 'disease' %}bg-danger
+                {% elif prediction.status == 'healthy' %}bg-success
+                {% else %}bg-warning text-dark{% endif %}">
+                <i class="bi bi-clipboard2-pulse"></i> AI Diagnosis Report
+            </div>
+            
+            <div class="card-body">
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-5 text-center">
+                        <img src="{{ url_for('static', filename=image_path) }}" class="img-fluid rounded shadow-sm" style="max-height: 180px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-7 text-center text-md-start mt-3 mt-md-0">
+                        <h6 class="text-muted text-uppercase fw-bold">Result</h6>
+                        <h2 class="fw-bold mb-3 
+                            {% if prediction.status == 'disease' %}text-danger
+                            {% elif prediction.status == 'healthy' %}text-success
+                            {% else %}text-warning{% endif %}">
+                            {{ prediction.class }}
+                        </h2>
+                        
+                        <h6 class="text-muted text-uppercase fw-bold small">AI Confidence</h6>
+                        <div class="progress" style="height: 15px;">
+                            <div class="progress-bar fw-bold
+                                {% if prediction.status == 'disease' %}bg-danger
+                                {% elif prediction.status == 'healthy' %}bg-success
+                                {% else %}bg-warning{% endif %}" 
+                                 role="progressbar" style="width: {{ prediction.confidence }}%;">
+                                {{ prediction.confidence }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🚨 NEW: REPORT OUTBREAK BANNER -->
+                {% if prediction.status == 'disease' %}
+                <div class="alert alert-danger d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 shadow-sm border-0">
+                    <div class="mb-2 mb-md-0">
+                        <strong><i class="bi bi-exclamation-triangle-fill"></i> Protect your neighbors!</strong><br>
+                        <small>Report this outbreak to alert farmers within a 10km radius on the Community Map.</small>
+                    </div>
+                    <form method="POST" action="{{ url_for('report_outbreak') }}">
+                        <input type="hidden" name="disease_name" value="{{ prediction.class }}">
+                        <button type="submit" class="btn btn-danger fw-bold"><i class="bi bi-geo-alt-fill"></i> Report Outbreak</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                {% if prediction.status == 'disease' or prediction.status == 'healthy' %}
+                <!-- Accordion for Rich Details -->
+                <div class="accordion mt-4" id="diseaseAccordion">
+                    
+                    <!-- Cause -->
+                    <div class="accordion-item border-0 mb-2 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#desc">
+                                📖 Cause & Description
+                            </button>
+                        </h2>
+                        <div id="desc" class="accordion-collapse collapse show" data-bs-parent="#diseaseAccordion">
+                            <div class="accordion-body text-muted">
+                                {{ prediction.details.description }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Symptoms -->
+                    <div class="accordion-item border-0 mb-2 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold text-danger" type="button" data-bs-toggle="collapse" data-bs-target="#symptoms">
+                                ⚠️ Symptoms to Look For
+                            </button>
+                        </h2>
+                        <div id="symptoms" class="accordion-collapse collapse" data-bs-parent="#diseaseAccordion">
+                            <div class="accordion-body text-muted">
+                                {{ prediction.details.symptoms }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prevention -->
+                    <div class="accordion-item border-0 mb-2 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#prevention">
+                                🛡️ Prevention Methods
+                            </button>
+                        </h2>
+                        <div id="prevention" class="accordion-collapse collapse" data-bs-parent="#diseaseAccordion">
+                            <div class="accordion-body text-muted">
+                                {{ prediction.details.prevention }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Treatment -->
+                    <div class="accordion-item border-0 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#treatment">
+                                💊 Recommended Treatment
+                            </button>
+                        </h2>
+                        <div id="treatment" class="accordion-collapse collapse" data-bs-parent="#diseaseAccordion">
+                            <div class="accordion-body text-muted fw-bold">
+                                {{ prediction.details.treatment }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Alert for Not Leaf / Unknown -->
+                <div class="alert alert-warning shadow-sm border-0 mt-4">
+                    <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ prediction.message }}</h5>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function showLoading() {
+        document.getElementById('uploadIcon').classList.add('d-none');
+        document.getElementById('submitBtn').classList.add('d-none');
+        document.getElementById('loadingSpinner').classList.remove('d-none');
+    }
+</script>
+{% endblock %}

@@ -1,33 +1,57 @@
 {% extends "base.html" %}
 {% block title %}Marketplace{% endblock %}
 {% block content %}
-<h2 class="text-success">Marketplace</h2>
-<p class="text-muted">Browse all active produce listings from farmers.</p>
+<h2 class="text-success fw-bold mb-4">🛒 Direct Marketplace</h2>
+<p class="text-muted">Browse all active produce listings directly from farmers.</p>
 
 <div class="row mt-4">
     <div class="col-md-12">
-        <table class="table table-bordered table-hover">
-            <thead class="table-success">
-                <tr>
-                    <th>Crop</th><th>Grade</th><th>Quantity (kg)</th><th>Price (₹/kg)</th>
-                    <th>Farmer</th><th>Location</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for l in listings %}
-                <tr>
-                    <td>{{ l.crop_type }}</td>
-                    <td>{{ l.grade }}</td>
-                    <td>{{ l.quantity_kg }}</td>
-                    <td>₹{{ l.expected_price_per_kg }}</td>
-                    <td>{{ l.farmer.name }}</td>
-                    <td>{{ l.farmer.district }}, {{ l.farmer.state }}</td>
-                </tr>
-                {% else %}
-                <tr><td colspan="6" class="text-center text-muted">No active listings found.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Crop</th>
+                                <th>Grade</th>
+                                <th>Quantity (Tons)</th>
+                                <th>Price / Bag</th>
+                                <th>Farmer</th>
+                                <th>Location</th>
+                                <th>Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in listings %}
+                            <tr>
+                                <td>
+                                    <strong>{{ l.crop_type }}</strong><br>
+                                    <small class="text-muted">{{ l.coffee_type or 'Standard' }}</small>
+                                </td>
+                                <td>{{ l.grade }}</td>
+                                <td>{{ l.quantity_tons }} Tons</td>
+                                <td class="text-success fw-bold">₹{{ l.expected_price_per_bag }}</td>
+                                <td>{{ l.farmer.name }}</td>
+                                <td>{{ l.farmer.district }}, {{ l.farmer.state }}</td>
+                                <td>
+                                    <a href="tel:{{ l.farmer.phone }}" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-telephone-fill"></i> {{ l.farmer.phone }}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-1 d-block mb-3 text-secondary"></i>
+                                    No active listings found. Farmers haven't added any produce yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

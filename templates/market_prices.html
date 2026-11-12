@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Market Prices{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-success fw-bold">📈 Market Prices</h2>
+        <p class="text-muted mb-0">Track time-to-time prices for coffee and pepper to make informed selling decisions.</p>
+    </div>
+    {% if api_status == 'Live API Data' %}
+        <span class="badge bg-success p-2"><i class="bi bi-broadcast"></i> Live API Data</span>
+    {% else %}
+        <span class="badge bg-warning text-dark p-2"><i class="bi bi-exclamation-circle"></i> {{ api_status }}</span>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <!-- Chart Column -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white fw-bold pt-4 pb-0 border-0">
+                <h5 class="text-success"><i class="bi bi-graph-up-arrow"></i> 6-Month Price Trend (₹/kg)</h5>
+            </div>
+            <div class="card-body">
+                <!-- Fixed height wrapper for the canvas so it doesn't collapse -->
+                <div style="height: 350px; width: 100%; position: relative;">
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Rates Column -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white fw-bold pt-4 pb-0 border-0">
+                <h5 class="text-success"><i class="bi bi-tags-fill"></i> Today's Reference Rates</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Variety</th><th>Price (₹/kg)</th><th>Trend</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for rate in current_rates %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-dark">{{ rate.variety }}</span><br>
+                                    <small class="text-muted">{{ rate.crop }}</small>
+                                </td>
+                                <td class="fw-bold text-success">{{ rate.price }}</td>
+                                <td>
+                                    {% if rate.trend == 'Rising' or rate.trend == 'Live' %}
+                                        <span class="badge bg-success"><i class="bi bi-arrow-up-right"></i> {{ rate.trend }}</span>
+                                    {% elif rate.trend == 'Volatile' %}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-arrow-left-right"></i> {{ rate.trend }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="bi bi-dash"></i> {{ rate.trend }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light text-center small text-muted">
+                Data based on recent market trends & API Ninjas.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Check if Chart.js is loaded to prevent errors
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js is not loaded. Check base.html.");
+            return;
+        }
+
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        
+        // Parse data from Flask
+        const chartData = {{ price_history | tojson | safe }};
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allows chart to fill the wrapper
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { family: 'Poppins', size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 12,
+                        titleFont: { family: 'Poppins', size: 14 },
+                        bodyFont: { family: 'Poppins', size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.parsed.y + '/kg';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            font: { family: 'Poppins' },
+                            callback: function(value) { return '₹' + value; }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Poppins' } }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

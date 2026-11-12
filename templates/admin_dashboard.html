@@ -1,30 +1,137 @@
 {% extends "base.html" %}
 {% block title %}Admin Dashboard{% endblock %}
 {% block content %}
-<h2 class="text-success">Admin Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-success fw-bold">⚙️ Admin Control Panel</h2>
+        <p class="text-muted mb-0">Manage users, verify buyers, and moderate the marketplace.</p>
+    </div>
+</div>
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-success text-white">Registered Farmers ({{ farmers|length }})</div>
-            <div class="card-body">
-                <ul class="list-group">
+<div class="row g-4">
+    <!-- Farmers Column -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-success text-white fw-bold">
+                <i class="bi bi-person-badge"></i> Registered Farmers ({{ farmers|length }})
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
                     {% for f in farmers %}
-                    <li class="list-group-item">{{ f.name }} ({{ f.district }}) - {{ f.crop_type }}</li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <strong class="text-dark">{{ f.name }}</strong><br>
+                            <small class="text-muted">{{ f.district }} | {{ f.phone }}</small>
+                        </div>
+                        <form method="POST" action="{{ url_for('delete_user', user_id=f.id) }}" onsubmit="return confirm('Delete this farmer?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted py-4">No farmers registered.</li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">Registered Buyers ({{ buyers|length }})</div>
-            <div class="card-body">
-                <ul class="list-group">
+
+    <!-- Buyers Column -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-primary text-white fw-bold">
+                <i class="bi bi-briefcase"></i> Registered Buyers ({{ buyers|length }})
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
                     {% for b in buyers %}
-                    <li class="list-group-item">{{ b.company_name }} - {{ b.buyer_type }}</li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <strong class="text-dark">{{ b.company_name }}</strong>
+                            {% if b.is_verified %}
+                                <span class="badge bg-success ms-1"><i class="bi bi-patch-check"></i> Verified</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark ms-1">Pending</span>
+                            {% endif %}
+                            <br>
+                            <small class="text-muted">{{ b.buyer_type }} | {{ b.phone }}</small>
+                        </div>
+                        <div class="d-flex gap-1">
+                            {% if not b.is_verified %}
+                            <a href="{{ url_for('verify_buyer', user_id=b.id) }}" class="btn btn-sm btn-success" title="Verify Buyer">
+                                <i class="bi bi-check-circle"></i>
+                            </a>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('delete_user', user_id=b.id) }}" onsubmit="return confirm('Delete this buyer?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted py-4">No buyers registered.</li>
                     {% endfor %}
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Stats Column -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white fw-bold">
+                <i class="bi bi-bar-chart"></i> Platform Snapshot
+            </div>
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h1 class="display-4 text-success fw-bold mb-0">{{ listings|length }}</h1>
+                <p class="text-muted text-uppercase fw-bold">Total Listings</p>
+                <hr>
+                <h1 class="display-4 text-primary fw-bold mb-0">{{ buyers|length + farmers|length }}</h1>
+                <p class="text-muted text-uppercase fw-bold">Total Users</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Marketplace Moderation -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white fw-bold pt-4 pb-0 border-0">
+                <h5 class="text-success"><i class="bi bi-shop"></i> Moderate Marketplace Listings</h5>
+            </div>
+            <div class="card-body">
+                {% if listings %}
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Farmer</th>
+                            <th>Crop</th>
+                            <th>Quantity</th>
+                            <th>Price / Bag</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                                        <tbody>
+                        {% for l in listings %}
+                        <tr>
+                            <td>{{ l.farmer.name }}</td>
+                            <td><strong>{{ l.crop_type }}</strong><br><small class="text-muted">{{ l.coffee_type or 'Standard' }}</small></td>
+                            <!-- Added fallback values just in case data is missing -->
+                            <td>{{ l.quantity_tons if l.quantity_tons else 'N/A' }} Tons</td>
+                            <td class="text-success fw-bold">₹{{ l.expected_price_per_bag if l.expected_price_per_bag else 'N/A' }}</td>
+                            <td><span class="badge bg-{{ 'success' if l.status == 'Active' else 'secondary' }}">{{ l.status }}</span></td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin_delete_listing', listing_id=l.id) }}" onsubmit="return confirm('Delete this listing permanently?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted text-center py-4">No listings have been created yet.</p>
+                {% endif %}
             </div>
         </div>
     </div>

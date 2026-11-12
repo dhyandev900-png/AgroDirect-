@@ -1,39 +1,153 @@
 {% extends "base.html" %}
-{% block title %}Add Listing{% endblock %}
+{% block title %}Add New Listing{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-success text-white">Add New Produce Listing</div>
-            <div class="card-body">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold">Add New Produce Listing</h4>
+                <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-sm btn-light">Cancel</a>
+            </div>
+            <div class="card-body p-4">
                 <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Crop Type</label>
-                        <select name="crop_type" class="form-select" required>
-                            <option value="Coffee">Coffee</option>
-                            <option value="Pepper">Pepper</option>
-                        </select>
+                    <div class="row">
+                        <!-- Crop Type -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Crop Type</label>
+                            <select name="crop_type" id="crop_type" class="form-select" required onchange="toggleCoffeeFields()">
+                                <option value="Coffee">Coffee</option>
+                                <option value="Pepper">Pepper</option>
+                            </select>
+                        </div>
+
+                        <!-- Coffee Type (Only for Coffee) -->
+                        <div class="col-md-6 mb-3" id="coffee_type_div">
+                            <label class="form-label fw-bold">Coffee Variety</label>
+                            <select name="coffee_type" id="coffee_type" class="form-select" onchange="updatePriceReference()">
+                                <option value="">-- Select Variety --</option>
+                                <option value="Arabica Parchment">Arabica Parchment (Washed)</option>
+                                <option value="Arabica Cherry">Arabica Cherry (Unwashed)</option>
+                                <option value="Robusta Parchment">Robusta Parchment (Washed)</option>
+                                <option value="Robusta Cherry">Robusta Cherry (Unwashed)</option>
+                                <option value="Monsooned Malabar">Monsooned Malabar</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Grade</label>
-                        <input type="text" name="grade" class="form-control" placeholder="e.g., Arabica Parchment A" required>
+
+                    <!-- Dynamic Price Reference -->
+                    <div class="alert alert-info py-2" id="price_ref_box" style="display: none;">
+                        <i class="bi bi-info-circle-fill"></i> <strong>Current Market Reference:</strong> 
+                        <span id="price_ref_text"></span>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Quantity (kg)</label>
-                        <input type="number" step="0.1" name="quantity_kg" class="form-control" required>
+
+                    <!-- Outturn & Moisture -->
+                    <div class="row bg-light p-3 rounded mb-3 mx-1" id="coffee_quality_div">
+                        <div class="col-12 mb-2">
+                            <h6 class="fw-bold text-success mb-0"><i class="bi bi-clipboard-check"></i> Quality Metrics</h6>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Outturn (%)</label>
+                            <input type="number" step="0.1" name="outturn_pct" id="outturn_pct" class="form-control" placeholder="e.g. 81.5" value="81.5">
+                            <small class="text-muted">Standard: ~81.5% for Arabica, ~83.3% for Robusta</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Moisture (%)</label>
+                            <input type="number" step="0.1" name="moisture_pct" id="moisture_pct" class="form-control" placeholder="e.g. 11.5" value="11.5">
+                            <small class="text-muted">Ideal: &lt; 14%</small>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="testing_requested" value="yes" id="testing_requested" onchange="toggleTesting()">
+                                <label class="form-check-label text-danger fw-bold" for="testing_requested">
+                                    I don't know the exact Outturn/Moisture. Request Buyer Testing.
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Expected Price (₹/kg)</label>
-                        <input type="number" step="0.1" name="expected_price_per_kg" class="form-control" required>
+
+                    <div class="row">
+                        <!-- Quantity -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Quantity (kg/tons)</label>
+                            <input type="number" step="0.1" name="quantity_kg" class="form-control" required>
+                        </div>
+                        <!-- Expected Price -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Expected Price (₹/bag)</label>
+                            <input type="number" step="0.1" name="expected_price_per_kg" id="expected_price" class="form-control" required>
+                        </div>
+                        <!-- Harvest Date -->
+                        <div class="col-md-12 mb-4">
+                            <label class="form-label fw-bold">Harvest Date</label>
+                            <input type="date" name="harvest_date" class="form-control" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Harvest Date</label>
-                        <input type="date" name="harvest_date" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Publish Listing</button>
+
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold">
+                        <i class="bi bi-box-seam"></i> Publish Listing
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Current market reference prices (approximate ₹/kg based on 50kg bags)
+    const marketPrices = {
+        'Arabica Parchment': 520,
+        'Arabica Cherry': 265,
+        'Robusta Parchment': 335,
+        'Robusta Cherry': 178,
+        'Monsooned Malabar': 550
+    };
+
+    function toggleCoffeeFields() {
+        const cropType = document.getElementById('crop_type').value;
+        const coffeeDivs = ['coffee_type_div', 'coffee_quality_div'];
+        
+        coffeeDivs.forEach(id => {
+            document.getElementById(id).style.display = (cropType === 'Coffee') ? 'block' : 'none';
+        });
+
+        if(cropType !== 'Coffee') {
+            document.getElementById('price_ref_box').style.display = 'none';
+        }
+    }
+
+    function updatePriceReference() {
+        const selectedType = document.getElementById('coffee_type').value;
+        const box = document.getElementById('price_ref_box');
+        const text = document.getElementById('price_ref_text');
+        
+        if (selectedType && marketPrices[selectedType]) {
+            const price = marketPrices[selectedType];
+            text.innerHTML = `${selectedType} is currently trading around <b>₹${price}/kg</b> at the farm gate.`;
+            box.style.display = 'block';
+            // Optionally auto-fill the expected price input
+            // document.getElementById('expected_price').value = price;
+        } else {
+            box.style.display = 'none';
+        }
+    }
+
+    function toggleTesting() {
+        const isChecked = document.getElementById('testing_requested').checked;
+        document.getElementById('outturn_pct').disabled = isChecked;
+        document.getElementById('moisture_pct').disabled = isChecked;
+        
+        if(isChecked) {
+            document.getElementById('outturn_pct').value = '';
+            document.getElementById('moisture_pct').value = '';
+        } else {
+            document.getElementById('outturn_pct').value = '81.5';
+            document.getElementById('moisture_pct').value = '11.5';
+        }
+    }
+
+    // Initialize state on page load
+    document.addEventListener("DOMContentLoaded", function() {
+        toggleCoffeeFields();
+    });
+</script>
 {% endblock %}

@@ -1,60 +1,204 @@
 {% extends "base.html" %}
 {% block title %}Crop Advisory{% endblock %}
 {% block content %}
-<h2 class="text-success">🌾 Crop Advisory Dashboard</h2>
-<p class="text-muted">Get personalized fertilizer, irrigation, and pest recommendations.</p>
-
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-success text-white">Soil Report</div>
-            <div class="card-body">
-                {% if soil %}
-                    <p><strong>pH:</strong> {{ soil.soil_ph }}</p>
-                    <p><strong>Nitrogen:</strong> {{ soil.nitrogen_kg_ha }} kg/ha</p>
-                    <p><strong>Phosphorus:</strong> {{ soil.phosphorus_kg_ha }} kg/ha</p>
-                    <p><strong>Potassium:</strong> {{ soil.potassium_kg_ha }} kg/ha</p>
-                    <a href="{{ url_for('soil_input') }}" class="btn btn-sm btn-outline-success">Update Soil Report</a>
-                {% else %}
-                    <p class="text-muted">No soil report found.</p>
-                    <a href="{{ url_for('soil_input') }}" class="btn btn-success">Add Soil Report</a>
-                {% endif %}
-            </div>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-success fw-bold">🌾 AI Crop Advisory</h2>
+        <p class="text-muted mb-0">Personalized, weather-aware recommendations for your farm.</p>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">Crop Stage</div>
-            <div class="card-body">
-                {% if stage %}
-                    <p><strong>Current Stage:</strong> {{ stage.current_stage|capitalize }}</p>
-                    <p><strong>Crop:</strong> {{ stage.crop_type }}</p>
-                {% else %}
-                    <p class="text-muted">Crop stage not set.</p>
-                {% endif %}
-                <form method="POST" action="{{ url_for('set_crop_stage') }}" class="mt-2">
-                    <div class="row g-2">
-                        <div class="col-md-7">
-                            <select name="current_stage" class="form-select form-select-sm" required>
-                                <option value="vegetative">Vegetative</option>
-                                <option value="flowering">Flowering</option>
-                                <option value="fruiting">Fruiting</option>
-                                <option value="harvesting">Harvesting</option>
-                            </select>
-                        </div>
-                        <div class="col-md-5">
-                            <button type="submit" class="btn btn-sm btn-primary w-100">Update Stage</button>
-                        </div>
+</div>
+
+<div class="row g-4">
+    <!-- Input Form Column -->
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-primary text-white fw-bold">
+                <i class="bi bi-gear-fill"></i> Farm Details
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('generate_advisory') }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Current Location (City/Town)</label>
+                        <input type="text" name="location" class="form-control" value="{{ current_user.location or current_user.district }}" required>
+                        <small class="text-muted">We fetch live weather based on this location.</small>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Current Crop Stage</label>
+                        <select name="current_stage" class="form-select" required>
+                            <option value="vegetative" {% if stage and stage.current_stage == 'vegetative' %}selected{% endif %}>Vegetative (Growth)</option>
+                            <option value="flowering" {% if stage and stage.current_stage == 'flowering' %}selected{% endif %}>Flowering</option>
+                            <option value="fruiting" {% if stage and stage.current_stage == 'fruiting' %}selected{% endif %}>Fruiting / Berry Development</option>
+                            <option value="harvesting" {% if stage and stage.current_stage == 'harvesting' %}selected{% endif %}>Harvesting</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Motor Pump Capacity</label>
+                        <select name="motor_flow_rate" class="form-select" required>
+                            <option value="20000">Small (3 HP) - ~20,000 L/hr</option>
+                            <option value="30000" selected>Medium (5 HP) - ~30,000 L/hr</option>
+                            <option value="40000">Large (7.5 HP) - ~40,000 L/hr</option>
+                            <option value="50000">Very Large (10 HP) - ~50,000 L/hr</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Have you irrigated the farm recently?</label>
+                        <select name="has_irrigated" class="form-select border-success" required>
+                            <option value="no" selected>No, it needs water</option>
+                            <option value="yes">Yes, recently irrigated</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold">
+                        <i class="bi bi-stars"></i> Generate AI Action Plan
+                    </button>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- Right Column: Soil Profile & Map Fetch -->
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-secondary text-white fw-bold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-layers-half"></i> Current Soil Profile</span>
+                {% if soil %}
+                <span class="badge bg-light text-dark">Updated: {{ soil.created_at.strftime('%d-%m-%Y') }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-4">
+                
+                <!-- Auto Fetch Button -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="text-muted small mb-0">No manual soil report? Click a point on the map to fetch it automatically.</p>
+                    <button class="btn btn-sm btn-outline-primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#mapCollapse">
+                        <i class="bi bi-geo-alt-fill"></i> Fetch Soil Data
+                    </button>
+                </div>
+
+                <!-- Collapsible Map Section -->
+                <div class="collapse mb-4" id="mapCollapse">
+                    <div class="card card-body bg-light border-0">
+                        <p class="small text-muted mb-2"><strong>Step 1:</strong> Click on the map exactly where your farm is located. <br><strong>Step 2:</strong> Enter your farm area and click Fetch.</p>
+                        
+                        <div id="map" style="height: 250px; border-radius: 8px; border: 1px solid #ced4da;" class="mb-3"></div>
+                        
+                        <form method="POST" action="{{ url_for('fetch_soil_api') }}" id="mapForm">
+                            <input type="hidden" name="lat" id="lat" required>
+                            <input type="hidden" name="lon" id="lon" required>
+                            
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold mb-1">Farm Area (Acres)</label>
+                                    <input type="number" step="0.1" name="area_acres" id="area_acres" class="form-control form-control-sm" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-sm btn-primary w-100 fw-bold" id="saveMapBtn" disabled>Fetch Live Soil Data</button>
+                                </div>
+                            </div>
+                            <small class="text-danger d-none" id="mapError">Please click on the map to set your location first.</small>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Existing Soil Data Display -->
+                {% if soil %}
+                <div class="row text-center">
+                    <div class="col-4 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <strong class="text-muted d-block small">pH Level</strong>
+                            <span class="fs-4 fw-bold text-dark">{{ soil.soil_ph }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <strong class="text-muted d-block small">Nitrogen (N)</strong>
+                            <span class="fs-4 fw-bold text-dark">{{ soil.nitrogen_kg_ha }} <span class="fs-6 fw-normal">kg/ha</span></span>
+                        </div>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <strong class="text-muted d-block small">Phosphorus (P)</strong>
+                            <span class="fs-4 fw-bold text-dark">{{ soil.phosphorus_kg_ha }} <span class="fs-6 fw-normal">kg/ha</span></span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded">
+                            <strong class="text-muted d-block small">Potassium (K)</strong>
+                            <span class="fs-4 fw-bold text-dark">{{ soil.potassium_kg_ha }} <span class="fs-6 fw-normal">kg/ha</span></span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded">
+                            <strong class="text-muted d-block small">Zinc (Zn)</strong>
+                            <span class="fs-4 fw-bold text-dark">{{ soil.zinc_ppm }} <span class="fs-6 fw-normal">ppm</span></span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light rounded">
+                            <strong class="text-muted d-block small">Boron (B)</strong>
+                            <span class="fs-4 fw-bold text-dark">{{ soil.boron_ppm }} <span class="fs-6 fw-normal">ppm</span></span>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between text-muted small">
+                    <span>Soil Type: <strong>{{ soil.soil_texture or 'Not Set' }}</strong></span>
+                    <a href="{{ url_for('soil_input') }}" class="text-decoration-none">Manual Update →</a>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-exclamation-circle text-danger display-4 mb-3"></i>
+                    <h5 class="text-danger fw-bold">No Soil Report Found</h5>
+                    <p class="text-muted">Use the Auto-Fetch map above or <a href="{{ url_for('soil_input') }}">manually enter</a> your soil report to get AI advice.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="text-center mt-4">
-    <a href="{{ url_for('generate_advisory') }}" class="btn btn-success btn-lg">
-        <i class="bi bi-magic"></i> Generate Full Advisory
-    </a>
-</div>
+<script>
+    // Initialize map
+    var map = L.map('map').setView([13.3161, 75.7720], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    var marker = null;
+
+    // Click once to drop a pin
+    map.on('click', function(e) {
+        if (marker) { map.removeLayer(marker); }
+        
+        marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+        
+        // Set hidden fields
+        document.getElementById('lat').value = e.latlng.lat;
+        document.getElementById('lon').value = e.latlng.lng;
+        
+        // Enable save button
+        document.getElementById('saveMapBtn').disabled = false;
+        document.getElementById('mapError').classList.add('d-none');
+    });
+
+    // Fix for Leaflet map rendering inside a Bootstrap Collapse
+    document.getElementById('mapCollapse').addEventListener('shown.bs.collapse', function () {
+        map.invalidateSize();
+    });
+
+    // AUTO-OPEN MAP IF COMING FROM DASHBOARD BUTTON
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.location.hash === '#mapCollapse') {
+            var mapCollapse = new bootstrap.Collapse(document.getElementById('mapCollapse'), {
+                toggle: true
+            });
+            // Need a slight delay to let the animation finish before resizing map
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 400);
+        }
+    });
+</script>
 {% endblock %}

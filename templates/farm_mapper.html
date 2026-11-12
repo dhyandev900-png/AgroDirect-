@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Map Your Farm{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <span>🗺️ Draw Your Farm Boundary</span>
+                <span class="badge bg-light text-success">Live Soil Fetch</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Click on the map to draw the corners of your farm. The system will automatically calculate the exact area and fetch scientific soil data for your exact GPS location.</p>
+                
+                <!-- The Map Container -->
+                <div id="map" style="height: 450px; border-radius: 10px; border: 2px solid #198754;" class="mb-3"></div>
+
+                <form method="POST" action="{{ url_for('save_farm_map') }}" id="mapForm">
+                    <input type="hidden" name="area_acres" id="area_acres">
+                    <input type="hidden" name="lat" id="lat">
+                    <input type="hidden" name="lon" id="lon">
+                    
+                    <div class="alert alert-info d-none" id="resultBox">
+                        <h5 class="fw-bold mb-1">Calculated Area: <span id="displayArea" class="text-success fs-3"></span> Acres</h5>
+                        <small>We will fetch global soil data for this location automatically when you save.</small>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-danger d-none w-50" id="clearBtn" onclick="clearMap()">Clear Map</button>
+                        <button type="submit" class="btn btn-success fw-bold d-none w-50" id="saveBtn">Save & Fetch Soil Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize map centered on Chikmagalur (adjust if needed)
+    var map = L.map('map').setView([13.3161, 75.7720], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var polygon = null;
+    var markers = [];
+    var points = [];
+
+    // Click event to draw points
+    map.on('click', function(e) {
+        points.push([e.latlng.lat, e.latlng.lng]);
+        
+        // Add a marker to show the clicked point
+        var marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+        markers.push(marker);
+        
+        if (polygon) { map.removeLayer(polygon); }
+        
+        // Need at least 3 points to make an area
+        if (points.length > 2) {
+            polygon = L.polygon(points, {color: '#198754', fillOpacity: 0.4}).addTo(map);
+            
+            // Use Turf.js to accurately calculate area on Earth's surface
+            var turfPolygon = turf.polygon([[...points, points[0]].map(p => [p[1], p[0]])]);
+            var areaSqMeters = turf.area(turfPolygon);
+            var acres = (areaSqMeters / 4046.86).toFixed(2); // 1 acre = 4046.86 sq meters
+            
+            document.getElementById('displayArea').innerText = acres;
+            document.getElementById('area_acres').value = acres;
+            
+            // Use the first clicked point as the center coordinate for soil fetch
+            document.getElementById('lat').value = points[0][0];
+            document.getElementById('lon').value = points[0][1];
+
+            document.getElementById('resultBox').classList.remove('d-none');
+            document.getElementById('saveBtn').classList.remove('d-none');
+            document.getElementById('clearBtn').classList.remove('d-none');
+        }
+    });
+
+    function clearMap() {
+        points = [];
+        if (polygon) { map.removeLayer(polygon); polygon = null; }
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        document.getElementById('resultBox').classList.add('d-none');
+        document.getElementById('saveBtn').classList.add('d-none');
+        document.getElementById('clearBtn').classList.add('d-none');
+    }
+</script>
+{% endblock %}
